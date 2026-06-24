@@ -23,10 +23,12 @@ export default function SettingsPage() {
   const [form] = Form.useForm()
   const [downloadProgress, setDownloadProgress] = useState(0)
   const [downloading, setDownloading] = useState(false)
+  const [appVersion, setAppVersion] = useState('')
 
   useEffect(() => {
     loadSettings()
     detectGPU()
+    window.zhiyuAPI.getAppVersion().then(setAppVersion).catch(() => setAppVersion('1.0.0'))
   }, [])
 
   useEffect(() => {
@@ -212,7 +214,7 @@ export default function SettingsPage() {
                 <Divider />
 
                 <Text type="secondary" style={{ fontSize: 12 }}>
-                  版本: 1.0.0 · 平台: Windows · 基于 Electron + React + llama.cpp 构建
+                  版本: {appVersion || '1.0.0'} · 平台: Windows · 基于 Electron + React + llama.cpp 构建
                 </Text>
               </Card>
             </Form>
