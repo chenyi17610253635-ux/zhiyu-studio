@@ -356,7 +356,6 @@ export class LlamaService {
           let inThink = false; let thinkSafeCounter = 0
           let thinkDepth = 0
           res.setEncoding('utf8')
-          res.setEncoding('utf8')
           for await (const chunk of res) {
             buffer += chunk
             const lines = buffer.split('\n')
@@ -370,10 +369,10 @@ export class LlamaService {
               if (line.startsWith('data: ')) {
                 try {
                   const json = JSON.parse(line.slice(6))
-                  let content = json.content ? json.content.replace(/💭(.*?)💭/g, '<think>$1</think>') : null
+                  let content = json.content
                   if (!content) {
                     const delta = json.choices?.[0]?.delta
-                    content = delta?.content ? delta.content.replace(/💭(.*?)💭/g, '<think>$1</think>') : undefined
+                    content = delta?.content
                     // reasoning_content 是模型的思考过程，直接显示让用户看到进度
                     if (!content && delta?.reasoning_content) {
                       content = `💭 ${delta.reasoning_content}`
