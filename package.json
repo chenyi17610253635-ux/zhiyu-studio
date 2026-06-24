@@ -1,7 +1,7 @@
 {
   "name": "zhiyu-studio",
-  "version": "1.0.2",
-  "description": "智语 Studio — 本地大语言模型桌面应用，支持聊天、RAG知识库和OpenAI兼容API",
+  "version": "1.1.0",
+  "description": "鏅鸿 Studio 鈥?鏈湴澶ц瑷€妯″瀷妗岄潰搴旂敤锛屾敮鎸佽亰澶┿€丷AG鐭ヨ瘑搴撳拰OpenAI鍏煎API",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx"
   },
-  "author": "智语 Studio",
+  "author": "鏅鸿 Studio",
   "license": "MIT",
   "dependencies": {
     "@ant-design/icons": "^5.3.0",

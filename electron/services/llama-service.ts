@@ -159,6 +159,7 @@ export class LlamaService {
         this.lastServerLog = (this.lastServerLog + text).slice(-10000)
         logger.debug(`llama-server: ${text.trim()}`)
         this.parseLoadProgress(text)
+      }
       this.process.stdout?.on('data', onData)
       this.process.stderr?.on('data', onData)
 
