@@ -42,6 +42,8 @@ export default function SettingsPage() {
     const dir = await dialogClient.openDirectory()
     if (dir) {
       form.setFieldValue('modelsPath', dir)
+      updateSettings({ ...form.getFieldsValue(), modelsPath: dir })
+      antMsg.success('模型路径已更新，请到模型管理页面刷新')
     }
   }
 
@@ -194,10 +196,10 @@ export default function SettingsPage() {
                     项目地址
                   </Button>
                   <Button icon={<DownloadOutlined />} onClick={async () => {
-                    antMsg.loading('检查更新中...', 999)
+                    antMsg.loading({ content: '检查更新中...', key: 'update', duration: 0 })
                     try {
                       const version = await window.zhiyuAPI.checkUpdate()
-                      antMsg.destroy()
+                      antMsg.destroy('update')
                       if (version) {
                         antMsg.info(`发现新版本 ${version}，正在下载...`)
                         window.zhiyuAPI.downloadUpdate()
@@ -209,8 +211,8 @@ export default function SettingsPage() {
                         antMsg.success('已是最新版本')
                       }
                     } catch {
-                      antMsg.destroy()
-                      antMsg.warning('检查更新失败')
+                      antMsg.destroy('update')
+                      antMsg.info('自动更新仅在安装版可用，请前往 GitHub 下载新版')
                     }
                   }}>
                     检查更新
