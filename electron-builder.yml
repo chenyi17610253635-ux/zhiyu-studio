@@ -1,0 +1,25 @@
+appId: com.zhiyu.studio
+productName: 智语 Studio
+copyright: Copyright © 2025 智语 Studio
+directories:
+  buildResources: resources
+  output: release
+files:
+  - dist
+  - dist-electron
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  artifactName: ${productName}-${version}-Setup.${ext}
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  shortcutName: 智语 Studio
+extraResources:
+  - from: resources/llama-bin/
+    to: llama-bin/
+    filter:
+      - "**/*"

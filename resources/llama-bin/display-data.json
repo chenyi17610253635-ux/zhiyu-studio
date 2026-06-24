@@ -1,0 +1,16 @@
+[
+  [
+    "en",
+    {
+      "langKey": "en",
+      "displayName": "Vulkan llama.cpp (Windows)",
+      "description": "Vulkan accelerated llama.cpp engine",
+      "releaseNotes": [
+        {
+          "version": "2.20.1",
+          "releaseNotes": "- llama.cpp release b9496 (commit 94a220cd6)\n- Improved vision quality for Gemma 4 12B\n- Fixed loading errors for Gemma 4 12B and other Gemma 4 models\n"
+        }
+      ]
+    }
+  ]
+]

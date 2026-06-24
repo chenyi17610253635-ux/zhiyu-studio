@@ -1,0 +1,16 @@
+node_modules/
+dist/
+dist-electron/
+release/
+.env
+.env.local
+*.log
+*.db
+.DS_Store
+Thumbs.db
+
+# llama 二进制文件（体积太大，单独下载）
+resources/llama-bin/*.dll
+resources/llama-bin/*.exe
+resources/llama-bin/*.node
+resources/llama-bin/*.pdb
