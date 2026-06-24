@@ -3,10 +3,9 @@
  * 本地模型管理 + HuggingFace 模型搜索下载
  */
 import { useEffect, useState } from 'react'
-import { Tabs, Typography, Button, Space, message } from 'antd'
-import { ReloadOutlined, PlusOutlined } from '@ant-design/icons'
+import { Tabs, Typography, Button, Space } from 'antd'
+import { ReloadOutlined } from '@ant-design/icons'
 import { useModelStore } from '../stores/model-store'
-import { useSettingsStore } from '../stores/settings-store'
 import ModelCard from '../components/models/ModelCard'
 import ModelDownload from '../components/models/ModelDownload'
 import ModelConfig from '../components/models/ModelConfig'
@@ -15,7 +14,6 @@ const { Title } = Typography
 
 export default function ModelsPage() {
   const { localModels, scanModels } = useModelStore()
-  const { updateSettings } = useSettingsStore()
   const [scanning, setScanning] = useState(false)
 
   useEffect(() => {
@@ -26,17 +24,6 @@ export default function ModelsPage() {
     setScanning(true)
     await scanModels()
     setScanning(false)
-  }
-
-  const handleSelectFolder = async () => {
-    const dir = await window.zhiyuAPI.openDirectoryDialog()
-    if (dir) {
-      await updateSettings({ modelsPath: dir })
-      message.success(`已添加模型目录: ${dir}`)
-      setScanning(true)
-      await scanModels()
-      setScanning(false)
-    }
   }
 
   return (
@@ -51,9 +38,6 @@ export default function ModelsPage() {
       }}>
         <Title level={4} style={{ margin: 0 }}>模型管理</Title>
         <Space>
-          <Button icon={<PlusOutlined />} onClick={handleSelectFolder}>
-            选择模型目录
-          </Button>
           <Button
             icon={<ReloadOutlined />}
             onClick={handleRefresh}
