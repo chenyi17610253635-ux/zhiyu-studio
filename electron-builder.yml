@@ -23,8 +23,6 @@ publish:
   owner: chenyi17610253635-ux
   repo: zhiyu-studio
   private: true
-  draft: false
-  prerelease: false
 extraResources:
   - from: resources/llama-bin/
     to: llama-bin/
