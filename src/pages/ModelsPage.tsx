@@ -3,7 +3,7 @@
  * 本地模型管理 + HuggingFace 模型搜索下载
  */
 import { useEffect, useState } from 'react'
-import { Tabs, Typography, Button, Space, message } from 'antd'
+import { Tabs, Typography, Button, Space, Modal, Spin, message } from 'antd'
 import { ReloadOutlined, FolderOpenOutlined } from '@ant-design/icons'
 import { useModelStore } from '../stores/model-store'
 import { useSettingsStore } from '../stores/settings-store'
@@ -14,7 +14,7 @@ import ModelConfig from '../components/models/ModelConfig'
 const { Title } = Typography
 
 export default function ModelsPage() {
-  const { localModels, scanModels } = useModelStore()
+  const { localModels, scanModels, isLoadingModel, loadingModelName } = useModelStore()
   const { updateSettings } = useSettingsStore()
   const [scanning, setScanning] = useState(false)
 
@@ -38,6 +38,29 @@ export default function ModelsPage() {
   }
 
   return (
+    <>
+      {/* 模型加载进度弹窗 */}
+      <Modal
+        open={isLoadingModel}
+        closable={false}
+        footer={null}
+        centered
+        width={400}
+      >
+        <div style={{ textAlign: 'center', padding: '24px 0' }}>
+          <Spin size="large" />
+          <div style={{ marginTop: 16, fontSize: 16, fontWeight: 600 }}>
+            正在加载模型
+          </div>
+          <div style={{ marginTop: 8, color: '#999' }}>
+            {loadingModelName}
+          </div>
+          <div style={{ marginTop: 16, color: '#bbb', fontSize: 12 }}>
+            llama-server 正在启动，请稍候...
+          </div>
+        </div>
+      </Modal>
+
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* 页头 */}
       <div style={{
@@ -86,5 +109,6 @@ export default function ModelsPage() {
         />
       </div>
     </div>
+    </>
   )
 }

@@ -1,11 +1,11 @@
 /**
  * 智语 Studio — 设置页面
  */
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Form, Card, Select, Switch, InputNumber, Input, Button,
   Space, Typography, Divider, Descriptions, Tag, Alert,
-  Spin, message as antMsg
+  Spin, Progress, message as antMsg
 } from 'antd'
 import {
   SaveOutlined,
@@ -21,6 +21,8 @@ export default function SettingsPage() {
   const { settings, isLoading, loadSettings, updateSettings } = useSettingsStore()
   const { gpuInfo, detectGPU } = useModelStore()
   const [form] = Form.useForm()
+  const [downloadProgress, setDownloadProgress] = useState(0)
+  const [downloading, setDownloading] = useState(false)
 
   useEffect(() => {
     loadSettings()
@@ -178,12 +180,16 @@ export default function SettingsPage() {
                       const version = await window.zhiyuAPI.checkUpdate()
                       antMsg.destroy('update')
                       if (version) {
-                        antMsg.info(`发现新版本 ${version}，正在下载...`)
-                        window.zhiyuAPI.downloadUpdate()
+                        antMsg.destroy('update')
+                        setDownloading(true)
+                        setDownloadProgress(0)
+                        window.zhiyuAPI.onUpdateProgress((p) => setDownloadProgress(p))
                         window.zhiyuAPI.onUpdateDownloaded(() => {
+                          setDownloading(false)
                           antMsg.success('更新已下载，点击确定立即安装', 10000)
                             .then(() => window.zhiyuAPI.installUpdate())
                         })
+                        window.zhiyuAPI.downloadUpdate()
                       } else {
                         antMsg.success('已是最新版本')
                       }
@@ -195,6 +201,13 @@ export default function SettingsPage() {
                     检查更新
                   </Button>
                 </Space>
+
+                {downloading && (
+                  <div style={{ marginBottom: 12 }}>
+                    <Text type="secondary">正在下载更新...</Text>
+                    <Progress percent={Math.round(downloadProgress)} />
+                  </div>
+                )}
 
                 <Divider />
 

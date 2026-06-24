@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 智语 Studio — 模型管理状态 (Zustand)
  */
 import { create } from 'zustand'
@@ -7,24 +7,18 @@ import type { LocalModel, HFModel, DownloadProgress, GPUInfo, ModelConfig } from
 import { modelClient, settingsClient, chatClient } from '../services/ipc-client'
 
 interface ModelState {
-  // 本地模型
   localModels: LocalModel[]
-  // HuggingFace 搜索结果
   hfModels: HFModel[]
-  // 下载进度映射
   downloadProgress: Map<string, DownloadProgress>
   downloadCleanup: (() => void) | null
-  // GPU 信息
   gpuInfo: GPUInfo | null
-  // 当前加载的模型
   loadedModel: LocalModel | null
-  // 模型配置
   modelConfig: ModelConfig
-  // 加载状态
   isScanning: boolean
   isSearching: boolean
+  isLoadingModel: boolean
+  loadingModelName: string
 
-  // 操作
   scanModels: () => Promise<void>
   searchHF: (query: string) => Promise<void>
   startDownload: (modelId: string, url: string) => Promise<void>
@@ -65,20 +59,19 @@ export const useModelStore = create<ModelState>((set, get) => ({
   },
   isScanning: false,
   isSearching: false,
+  isLoadingModel: false,
+  loadingModelName: '',
 
   scanModels: async () => {
     set({ isScanning: true })
     try {
       const models = await modelClient.scanModels()
       set({ localModels: models })
-
-      // 检查当前加载的模型状态
       const status = await chatClient.getModelStatus()
       if (status.isLoaded && status.modelPath) {
         const current = models.find(m => m.filePath === status.modelPath)
         set({ loadedModel: current || null })
       } else {
-        // 模型进程已退出或未加载，清除状态
         set({ loadedModel: null })
       }
     } catch (error) {
@@ -114,9 +107,7 @@ export const useModelStore = create<ModelState>((set, get) => ({
         return { downloadProgress: newProgress }
       })
     })
-
     set({ downloadCleanup: cleanup })
-
     try {
       await modelClient.downloadModel(modelId, url)
     } catch (error) {
@@ -136,10 +127,9 @@ export const useModelStore = create<ModelState>((set, get) => ({
   },
 
   loadModel: async (model: LocalModel) => {
+    set({ isLoadingModel: true, loadingModelName: model.name })
     try {
       const config = { ...get().modelConfig }
-      // 每次加载模型都重新检测 mmproj（不同模型需要不同的投影器）
-      // 先清除上次的缓存值，让 detectMmproj 为新模型重新匹配
       config.mmprojPath = ''
       const mmproj = await modelClient.detectMmproj(model.filePath)
       if (mmproj) {
@@ -155,6 +145,8 @@ export const useModelStore = create<ModelState>((set, get) => ({
       console.error('加载模型失败:', error)
       message.error(`模型加载失败: ${(error as Error).message}`)
       return false
+    } finally {
+      set({ isLoadingModel: false, loadingModelName: '' })
     }
   },
 
@@ -182,4 +174,3 @@ export const useModelStore = create<ModelState>((set, get) => ({
     return get().downloadProgress.get(modelId)
   }
 }))
-
