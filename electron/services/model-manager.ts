@@ -5,6 +5,7 @@
 import fs from 'fs'
 import path from 'path'
 import { getAppPaths } from '../utils/paths'
+import { SettingsService } from './settings-service'
 import { logger } from '../utils/logger'
 
 export interface LocalModel {
@@ -59,6 +60,13 @@ export class ModelManager {
       // 递归扫描所有子目录
       this.scanDir(this.modelsDir, models)
 
+      // 扫描设置里配置的额外模型路径
+      try {
+        const settings = new SettingsService().getAll()
+        if (settings.modelsPath && fs.existsSync(settings.modelsPath)) {
+          this.scanDir(settings.modelsPath, models)
+        }
+      } catch { /* 设置不存在就跳过 */ }
 
       // 按添加时间倒序排列
       models.sort((a, b) => new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime())

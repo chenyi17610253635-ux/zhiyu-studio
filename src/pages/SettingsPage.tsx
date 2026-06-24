@@ -1,16 +1,17 @@
 /**
  * 智语 Studio — 设置页面
  */
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Form, Card, Select, Switch, InputNumber, Input, Button,
   Space, Typography, Divider, Descriptions, Tag, Alert,
-  Spin
+  Spin, message as antMsg
 } from 'antd'
 import {
   SaveOutlined,
   InfoCircleOutlined,
-  GithubOutlined
+  GithubOutlined,
+  DownloadOutlined
 } from '@ant-design/icons'
 import { useSettingsStore } from '../stores/settings-store'
 import { useModelStore } from '../stores/model-store'
@@ -189,13 +190,29 @@ export default function SettingsPage() {
                 </Paragraph>
 
                 <Space>
-                  <Button icon={<GithubOutlined />}>
+                  <Button icon={<GithubOutlined />} onClick={() => window.open('https://github.com/chenyi17610253635-ux/zhiyu-studio')}>
                     项目地址
                   </Button>
-                  <Button>
-                    问题反馈
-                  </Button>
-                  <Button>
+                  <Button icon={<DownloadOutlined />} onClick={async () => {
+                    antMsg.loading('检查更新中...', 999)
+                    try {
+                      const version = await window.zhiyuAPI.checkUpdate()
+                      antMsg.destroy()
+                      if (version) {
+                        antMsg.info(`发现新版本 ${version}，正在下载...`)
+                        window.zhiyuAPI.downloadUpdate()
+                        window.zhiyuAPI.onUpdateDownloaded(() => {
+                          antMsg.success('更新已下载，点击确定立即安装', 10000)
+                            .then(() => window.zhiyuAPI.installUpdate())
+                        })
+                      } else {
+                        antMsg.success('已是最新版本')
+                      }
+                    } catch {
+                      antMsg.destroy()
+                      antMsg.warning('检查更新失败')
+                    }
+                  }}>
                     检查更新
                   </Button>
                 </Space>
