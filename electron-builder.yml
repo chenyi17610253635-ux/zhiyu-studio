@@ -18,6 +18,12 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   shortcutName: 智语 Studio
+publish:
+  provider: github
+  owner: chenyi17610253635-ux
+  repo: zhiyu-studio
+  private: true
+  token: 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
 extraResources:
   - from: resources/llama-bin/
     to: llama-bin/

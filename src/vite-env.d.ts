@@ -42,6 +42,12 @@ interface ZhiyuAPI {
   openFileDialog: (options?: any) => Promise<string | null>
   openDirectoryDialog: () => Promise<string | null>
   openModelsFolder: () => Promise<void>
+  checkUpdate: () => Promise<string | null>
+  downloadUpdate: () => Promise<void>
+  installUpdate: () => Promise<void>
+  onUpdateAvailable: (callback: (version: string) => void) => () => void
+  onUpdateProgress: (callback: (percent: number) => void) => () => void
+  onUpdateDownloaded: (callback: () => void) => () => void
   getAppPaths: () => Promise<any>
   getAppVersion: () => Promise<string>
 }

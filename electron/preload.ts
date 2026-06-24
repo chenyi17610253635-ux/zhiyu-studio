@@ -115,6 +115,26 @@ contextBridge.exposeInMainWorld('zhiyuAPI', {
   /** 打开模型目录 */
   openModelsFolder: () => ipcRenderer.invoke('app:openModelsFolder'),
 
+  // ============ 自动更新 ============
+  checkUpdate: () => ipcRenderer.invoke('update:check'),
+  downloadUpdate: () => ipcRenderer.invoke('update:download'),
+  installUpdate: () => ipcRenderer.invoke('update:install'),
+  onUpdateAvailable: (callback: (version: string) => void) => {
+    const h = (_e: any, v: string) => callback(v)
+    ipcRenderer.on('update:available', h)
+    return () => ipcRenderer.removeListener('update:available', h)
+  },
+  onUpdateProgress: (callback: (percent: number) => void) => {
+    const h = (_e: any, p: number) => callback(p)
+    ipcRenderer.on('update:progress', h)
+    return () => ipcRenderer.removeListener('update:progress', h)
+  },
+  onUpdateDownloaded: (callback: () => void) => {
+    const h = () => callback()
+    ipcRenderer.on('update:downloaded', h)
+    return () => ipcRenderer.removeListener('update:downloaded', h)
+  },
+
   /** 监听模型被卸载事件（llama-server 退出时触发）reason: 'unload' | 'crash' | 'load_fail' */
   onModelUnloaded: (callback: (reason: string) => void) => {
     const handler = (_event: any, reason: string) => callback(reason)
@@ -163,6 +183,12 @@ export interface ZhiyuAPI {
   getAppPaths: () => Promise<any>
   getAppVersion: () => Promise<string>
   openModelsFolder: () => Promise<void>
+  checkUpdate: () => Promise<string | null>
+  downloadUpdate: () => Promise<void>
+  installUpdate: () => Promise<void>
+  onUpdateAvailable: (callback: (version: string) => void) => () => void
+  onUpdateProgress: (callback: (percent: number) => void) => () => void
+  onUpdateDownloaded: (callback: () => void) => () => void
   onModelUnloaded: (callback: (reason: string) => void) => () => void
 }
 

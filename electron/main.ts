@@ -5,6 +5,7 @@
 import { app, BrowserWindow, ipcMain, shell, dialog } from 'electron'
 import path from 'path'
 import fs from 'fs'
+import { autoUpdater } from 'electron-updater'
 import { logger } from './utils/logger'
 import { getAppPaths, ensureDirectories } from './utils/paths'
 import { registerModelHandlers } from './ipc/model-handler'
@@ -127,6 +128,30 @@ app.whenReady().then(async () => {
       createWindow()
     }
   })
+})
+
+// === 自动更新 ===
+autoUpdater.autoDownload = false
+autoUpdater.autoInstallOnAppQuit = true
+autoUpdater.on('update-available', (info) => {
+  logger.info(`发现新版本: ${info.version}`)
+  BrowserWindow.getAllWindows().forEach(w => { if (!w.isDestroyed()) w.webContents.send('update:available', info.version) })
+})
+autoUpdater.on('download-progress', (p) => {
+  BrowserWindow.getAllWindows().forEach(w => { if (!w.isDestroyed()) w.webContents.send('update:progress', p.percent) })
+})
+autoUpdater.on('update-downloaded', () => {
+  BrowserWindow.getAllWindows().forEach(w => { if (!w.isDestroyed()) w.webContents.send('update:downloaded') })
+})
+ipcMain.handle('update:check', async () => {
+  const result = await autoUpdater.checkForUpdates()
+  return result?.updateInfo?.version || null
+})
+ipcMain.handle('update:download', async () => {
+  autoUpdater.downloadUpdate()
+})
+ipcMain.handle('update:install', () => {
+  autoUpdater.quitAndInstall()
 })
 
 // 所有窗口关闭时退出（macOS 除外）
