@@ -1,6 +1,6 @@
 {
   "name": "zhiyu-studio",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "智语 Studio — 本地大语言模型桌面应用，支持聊天、RAG知识库和OpenAI兼容API",
   "main": "dist-electron/main.js",
   "scripts": {
