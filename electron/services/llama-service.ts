@@ -369,10 +369,10 @@ export class LlamaService {
               if (line.startsWith('data: ')) {
                 try {
                   const json = JSON.parse(line.slice(6))
-                  let content = json.content
+                  let content = json.content ? json.content.replace(/💭(.*?)💭/gs, '<think>$1</think>') : null
                   if (!content) {
                     const delta = json.choices?.[0]?.delta
-                    content = delta?.content
+                    content = delta?.content ? delta.content.replace(/💭(.*?)💭/gs, '<think>$1</think>') : undefined
                     // reasoning_content 是模型的思考过程，直接显示让用户看到进度
                     if (!content && delta?.reasoning_content) {
                       content = `💭 ${delta.reasoning_content}`
