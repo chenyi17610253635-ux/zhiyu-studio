@@ -4,18 +4,12 @@
  */
 import fs from 'fs'
 import path from 'path'
+import type { ChatSession, ChatMessage as ChatMessageBase } from '../../src/types'
 import { getAppPaths } from '../utils/paths'
 import { logger } from '../utils/logger'
 
-export interface ChatSession {
-  id: string
-  title: string
-  createdAt: string
-  updatedAt: string
-  messageCount: number
-  modelName?: string
-}
-
+// ChatMessage 在 src/types 中定义了大量 UI 专用字段（isStreaming、generationSpeed 等），
+// 服务端持久化使用更精简的版本，暂不直接引用 types 版本以避免序列化多余字段。
 export interface ChatMessage {
   id: string
   role: 'user' | 'assistant' | 'system'
@@ -34,11 +28,30 @@ export interface ChatMessage {
 export class SessionManager {
   private sessionsDir: string
   private sessionsCache: Map<string, { meta: ChatSession; messages: ChatMessage[] }> = new Map()
+  /** 按 session ID 的写锁，防止并发写入导致数据损坏 */
+  private writeLocks: Map<string, Promise<void>> = new Map()
 
   constructor() {
     const paths = getAppPaths()
     this.sessionsDir = paths.sessions
     this.loadAllSessions()
+  }
+
+  /**
+   * 获取 session 的写锁，确保同一 session 的写操作串行执行
+   */
+  private async withLock<T>(sessionId: string, fn: () => Promise<T> | T): Promise<T> {
+    const prev = this.writeLocks.get(sessionId)
+    let release: () => void
+    const next = new Promise<void>(resolve => { release = resolve })
+    this.writeLocks.set(sessionId, next)
+
+    if (prev) await prev
+    try {
+      return await fn()
+    } finally {
+      release!()
+    }
   }
 
   /**
@@ -84,7 +97,7 @@ export class SessionManager {
   /**
    * 创建新会话
    */
-  createSession(title?: string): ChatSession {
+  async createSession(title?: string): Promise<ChatSession> {
     const id = this.generateId()
     const now = new Date().toISOString()
 
@@ -98,7 +111,6 @@ export class SessionManager {
 
     this.sessionsCache.set(id, { meta: session, messages: [] })
     this.saveSession(id)
-
     logger.info(`会话已创建: ${session.id} - ${session.title}`)
     return session
   }
@@ -106,7 +118,8 @@ export class SessionManager {
   /**
    * 删除会话
    */
-  deleteSession(sessionId: string): void {
+  async deleteSession(sessionId: string): Promise<void> {
+    await this.withLock(sessionId, () => {
     this.sessionsCache.delete(sessionId)
 
     const filePath = path.join(this.sessionsDir, `${sessionId}.json`)
@@ -115,18 +128,21 @@ export class SessionManager {
     }
 
     logger.info(`会话已删除: ${sessionId}`)
+    })
   }
 
   /**
    * 更新会话标题
    */
-  updateSessionTitle(sessionId: string, title: string): void {
+  async updateSessionTitle(sessionId: string, title: string): Promise<void> {
+    await this.withLock(sessionId, () => {
     const data = this.sessionsCache.get(sessionId)
     if (!data) throw new Error(`会话不存在: ${sessionId}`)
 
     data.meta.title = title
     data.meta.updatedAt = new Date().toISOString()
     this.saveSession(sessionId)
+    })
   }
 
   /**
@@ -144,7 +160,8 @@ export class SessionManager {
   /**
    * 添加消息到会话
    */
-  addMessage(sessionId: string, message: Omit<ChatMessage, 'id' | 'timestamp'>): ChatMessage {
+  async addMessage(sessionId: string, message: Omit<ChatMessage, 'id' | 'timestamp'>): Promise<ChatMessage> {
+    return await this.withLock(sessionId, async () => {
     const data = this.sessionsCache.get(sessionId)
     if (!data) throw new Error(`会话不存在: ${sessionId}`)
 
@@ -166,6 +183,7 @@ export class SessionManager {
 
     this.saveSession(sessionId)
     return newMessage
+    })
   }
 
   /**

@@ -1,21 +1,12 @@
-/**
+﻿/**
  * 智语 Studio — 模型下载服务
  * 支持断点续传和下载进度回调
  */
 import fs from 'fs'
 import path from 'path'
+import type { DownloadProgress } from '../../src/types'
 import { getAppPaths } from '../utils/paths'
 import { logger } from '../utils/logger'
-
-export interface DownloadProgress {
-  modelId: string
-  fileName: string
-  downloaded: number
-  total: number
-  percentage: number
-  speed: number
-  status: 'downloading' | 'completed' | 'cancelled' | 'error'
-}
 
 export class DownloadService {
   private activeDownloads: Map<string, AbortController> = new Map()
@@ -77,17 +68,17 @@ export class DownloadService {
         throw new Error('无法读取响应数据流')
       }
 
-      // 检查是否有部分下载的文件（断点续传）
+      // 清理可能残留的旧临时文件
       let downloaded = 0
       const tempPath = filePath + '.tmp'
 
       if (fs.existsSync(tempPath)) {
-        downloaded = fs.statSync(tempPath).size
+        fs.unlinkSync(tempPath)
         logger.info(`断点续传: 已下载 ${downloaded} 字节`)
       }
 
       const writeStream = fs.createWriteStream(tempPath, {
-        flags: downloaded > 0 ? 'a' : 'w'
+        flags: 'w'
       })
 
       let lastTime = Date.now()

@@ -166,8 +166,11 @@ export class APIServer {
     if (this.isRunning) return
 
     this.port = port || 1234
+    let retries = 0
+    const maxRetries = 10
 
     return new Promise((resolve, reject) => {
+      const doStart = () => {
       this.server = this.app.listen(this.port, '127.0.0.1', () => {
         this.isRunning = true
         logger.info(`API 服务器已启动: http://127.0.0.1:${this.port}`)
@@ -176,15 +179,23 @@ export class APIServer {
 
       this.server.on('error', (error: any) => {
         if (error.code === 'EADDRINUSE') {
-          logger.warn(`端口 ${this.port} 已被占用，尝试端口 ${this.port + 1}`)
+            retries++
+            if (retries > maxRetries) {
+              reject(new Error(`端口范围 ${this.port - retries + 1}-${this.port} 均被占用，无法启动 API 服务器`))
+              return
+            }
+            logger.warn(`端口 ${this.port} 已被占用，尝试端口 ${this.port + 1}（${retries}/${maxRetries}）`)
           this.port++
           this.server?.close()
-          this.start(this.port).then(resolve).catch(reject)
+            // 延迟 200ms 再试，避免旧 socket 未完全释放
+            setTimeout(doStart, 200)
         } else {
           logger.error('API 服务器启动失败', error)
           reject(error)
         }
       })
+      }
+      doStart()
     })
   }
 

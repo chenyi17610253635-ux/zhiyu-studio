@@ -40,6 +40,8 @@ export const useModelStore = create<ModelState>((set, get) => ({
   localModels: [],
   hfModels: [],
   downloadProgress: new Map(),
+  downloadCleanup: null,
+  downloadCleanup: null as (() => void) | null,
   gpuInfo: null,
   loadedModel: null,
   modelConfig: {
@@ -103,14 +105,17 @@ export const useModelStore = create<ModelState>((set, get) => ({
   },
 
   startDownload: async (modelId: string, url: string) => {
-    // 设置进度监听
-    modelClient.onDownloadProgress((progress: DownloadProgress) => {
+    const prevCleanup = get().downloadCleanup
+    if (prevCleanup) prevCleanup()
+    const cleanup = modelClient.onDownloadProgress((progress: DownloadProgress) => {
       set(state => {
         const newProgress = new Map(state.downloadProgress)
         newProgress.set(progress.modelId, progress)
         return { downloadProgress: newProgress }
       })
     })
+
+    set({ downloadCleanup: cleanup })
 
     try {
       await modelClient.downloadModel(modelId, url)

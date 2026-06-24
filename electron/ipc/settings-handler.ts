@@ -3,11 +3,10 @@
  * 处理应用配置和 GPU 检测
  */
 import { ipcMain } from 'electron'
-import { SettingsService } from '../services/settings-service'
+import { settingsService } from '../services/settings-service'
 import { GPUDetector } from '../services/gpu-detector'
 import { logger } from '../utils/logger'
 
-const settingsService = new SettingsService()
 const gpuDetector = new GPUDetector()
 
 export function registerSettingsHandlers(): void {

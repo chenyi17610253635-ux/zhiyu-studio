@@ -23,6 +23,7 @@ interface ChatState {
   tokenCount: number
   // 模型是否已加载
   isModelLoaded: boolean
+  streamCleanup: (() => void) | null
 
   // 操作
   loadSessions: () => Promise<void>
@@ -46,6 +47,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   streamingSpeed: 0,
   tokenCount: 0,
   isModelLoaded: false,
+  streamCleanup: null,
 
   loadSessions: async () => {
     const sessions = await sessionClient.getSessions()
@@ -91,6 +93,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
   sendMessage: async (content: string, attachments: ChatAttachment[] = []) => {
     const { activeSessionId, isStreaming, messages } = get()
     if (!activeSessionId || isStreaming || (!content.trim() && attachments.length === 0)) return
+    const prevCleanup = get().streamCleanup
+    if (prevCleanup) prevCleanup()
+
 
     // 发送前同步模型加载状态
     const loadedModel = useModelStore.getState().loadedModel
@@ -209,7 +214,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
         isStreaming: false,
         streamingText: '',
         streamingSpeed: 0,
-        tokenCount: 0
+        tokenCount: 0,
+        streamCleanup: null
       }))
 
       // 刷新会话列表（更新消息数和标题）
@@ -237,12 +243,26 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
     // 开始流式对话
     try {
+      set({\\
+        streamCleanup: () => {\\
+          cleanupToken()\\
+          cleanupDone()\\
+          cleanupError()\\
+        }\\
+      })\\
+      set({
+        streamCleanup: () => {
+          cleanupToken()
+          cleanupDone()
+          cleanupError()
+        }
+      })
       await chatClient.streamChat(history, modelConfig)
     } catch (error) {
       cleanupToken()
       cleanupDone()
       cleanupError()
-      set({ isStreaming: false, streamingText: '' })
+      set({ isStreaming: false, streamingText: '', streamCleanup: null })
     }
   },
 
@@ -259,7 +279,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
     // 如果最后一条消息已经是用户消息，没有 AI 回复可重新生成
     if (lastUserMsgIndex === 0) {
-      set({ isStreaming: false })
+      const cleanup = get().streamCleanup\\
+    if (cleanup) cleanup()\\
+    const cleanup = get().streamCleanup
+    if (cleanup) cleanup()
+    set({ isStreaming: false })
       return
     }
 
@@ -267,9 +291,25 @@ export const useChatStore = create<ChatState>((set, get) => ({
     const filteredMessages = messages.slice(0, -(lastUserMsgIndex))
 
     set({ messages: filteredMessages, isStreaming: true, streamingText: '' })
+    let accumulatedTokens = ''
+    let flushTimer = null
+    const scheduleFlush = () => {
+      if (flushTimer) return
+      flushTimer = setTimeout(() => {
+        flushTimer = null
+        const text = accumulatedTokens
+        accumulatedTokens = ''
+        if (text) {
+          set(state => ({ streamingText: state.streamingText + text }))
+        }
+        if (accumulatedTokens) scheduleFlush()
+      }, 50)
+    }
+
 
     const cleanupToken = chatClient.onStreamToken((token: string) => {
-      set(state => ({ streamingText: state.streamingText + token }))
+      accumulatedTokens += token
+      scheduleFlush()
     })
 
     const cleanupDone = chatClient.onStreamDone(async (fullText: string) => {
@@ -309,7 +349,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       cleanupToken()
       cleanupDone()
       cleanupError()
-      set({ isStreaming: false, streamingText: '' })
+      set({ isStreaming: false, streamingText: '', streamCleanup: null })
     })
 
     try {
@@ -318,11 +358,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
       cleanupToken()
       cleanupDone()
       cleanupError()
-      set({ isStreaming: false, streamingText: '' })
+      set({ isStreaming: false, streamingText: '', streamCleanup: null })
     }
   },
 
   stopStreaming: () => {
+    const cleanup = get().streamCleanup\\
+    if (cleanup) cleanup()\\
     set({ isStreaming: false })
   },
 

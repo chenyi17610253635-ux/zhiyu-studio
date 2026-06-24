@@ -12,12 +12,13 @@ import { registerModelHandlers } from './ipc/model-handler'
 import { registerChatHandlers } from './ipc/chat-handler'
 import { registerRagHandlers } from './ipc/rag-handler'
 import { registerSettingsHandlers } from './ipc/settings-handler'
-import { AppSettings } from './services/settings-service'
-import { SettingsService } from './services/settings-service'
+import type { AppSettings } from '../src/types'
+import { settingsService } from './services/settings-service'
 import { APIServer } from './ipc/api-server'
 
 let mainWindow: BrowserWindow | null = null
 let apiServer: APIServer | null = null
+let serverPort: number = 1234
 
 const iconPath = path.join(__dirname, '../resources/icon.ico')
 
@@ -108,7 +109,7 @@ let storedSettings: AppSettings | null = null
 
 function getSettings(): AppSettings {
   if (!storedSettings) {
-    storedSettings = new SettingsService().getAll()
+    storedSettings = settingsService.getAll()
   }
   return storedSettings
 }
@@ -219,11 +220,13 @@ ipcMain.handle('app:getVersion', () => {
 // ============ 服务器 IPC 处理器 ============
 
 ipcMain.handle('server:getStatus', () => {
-  return apiServer ? apiServer.getStatus() : { isRunning: false, port: 1234, address: 'http://127.0.0.1:1234' }
+  return apiServer ? apiServer.getStatus() : { isRunning: false, port: serverPort, address: `http://127.0.0.1:${serverPort}` }
 })
 
 ipcMain.handle('server:toggle', async (_event, enable: boolean) => {
   if (enable && !apiServer?.getStatus().isRunning) {
+    const settings = getSettings()
+    serverPort = settings.apiPort || 1234
     await startAPIServer()
   } else if (!enable && apiServer?.getStatus().isRunning) {
     await apiServer?.stop()
@@ -231,5 +234,5 @@ ipcMain.handle('server:toggle', async (_event, enable: boolean) => {
 })
 
 ipcMain.handle('server:getPort', () => {
-  return apiServer?.getPort() || 1234
+  return apiServer?.getPort() || serverPort
 })

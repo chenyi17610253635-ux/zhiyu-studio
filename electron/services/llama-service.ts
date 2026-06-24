@@ -162,10 +162,7 @@ export class LlamaService {
         }
 
         // 启动阶段退出：看日志里是否有成功标记
-        if (this.lastServerLog.includes('server listening') || this.lastServerLog.includes('model loaded')) {
-          this.status = this.buildStatus(true, modelPath, config, port)
-          resolve(true)
-        } else {
+        {
           const tail = this.lastServerLog.trim().slice(-500)
           reject(new Error(`进程退出 (${code})\n${tail}`))
         }
@@ -255,8 +252,8 @@ export class LlamaService {
         }
         return
       }
-    } catch {
-      // HTTP 请求失败
+    } catch (error) {
+      logger.error('streamChat HTTP 请求失败', error as Error)
     }
 
     yield '无法连接到模型服务器。请确认模型已加载，然后重试。'
@@ -311,7 +308,7 @@ export class LlamaService {
       }),
       temperature: options?.temperature ?? 0.7,
       top_p: options?.topP ?? 0.9,
-      max_tokens: (options?.maxTokens ?? 4096) * 2,
+      max_tokens: options?.maxTokens ?? 4096,
       seed: options?.seed ?? -1,
       stream: options?.stream ?? true
     })

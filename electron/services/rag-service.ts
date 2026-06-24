@@ -4,20 +4,10 @@
  */
 import fs from 'fs'
 import path from 'path'
+import type { RagDocument, RagStats } from '../../src/types'
 import { getAppPaths } from '../utils/paths'
 import { logger } from '../utils/logger'
 import { llamaService } from './llama-service'
-
-export interface RagDocument {
-  id: string
-  fileName: string
-  filePath: string
-  fileType: string
-  fileSize: number
-  chunkCount: number
-  uploadedAt: string
-  knowledgeBase: string
-}
 
 export interface RagChunk {
   id: string
@@ -25,13 +15,6 @@ export interface RagChunk {
   content: string
   embedding?: number[]
   metadata?: any
-}
-
-export interface RagStats {
-  totalDocs: number
-  totalChunks: number
-  totalSize: number
-  knowledgeBases: string[]
 }
 
 export class RagService {
@@ -306,14 +289,13 @@ export class RagService {
   /**
    * 解析 PDF 文件
    */
-  private async parsePdf(filePath: string): Promise<string> {
+ private async parsePdf(filePath: string): Promise<string> {
     try {
       // 动态导入 pdf-parse（避免在主进程中阻塞）
-      const { PDFParse } = await import('pdf-parse')
+      const pdfParse = await import('pdf-parse')
       const dataBuffer = fs.readFileSync(filePath)
-      const parser = new PDFParse({ data: dataBuffer, verbosity: 0 })
-      const result = await parser.getText()
-      return typeof result === 'string' ? result : (result?.text ?? '')
+      const result = await pdfParse.default(dataBuffer)
+      return result?.text || ''
     } catch (error) {
       logger.error('PDF 解析失败，尝试简易读取', error as Error)
       // 降级：读取为原始文本（可能包含乱码但仍有部分可读内容）

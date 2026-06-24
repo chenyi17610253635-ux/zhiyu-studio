@@ -3,37 +3,9 @@
  * 管理应用配置的读取和持久化
  */
 import fs from 'fs'
+import type { AppSettings } from '../../src/types'
 import { getAppPaths } from '../utils/paths'
 import { logger } from '../utils/logger'
-
-export interface AppSettings {
-  /** 界面语言 */
-  language: 'zh-CN' | 'en'
-  /** 模型默认路径 */
-  modelsPath: string
-  /** 自动加载上一次的模型 */
-  autoLoadLastModel: boolean
-  /** 默认上下文大小 */
-  defaultContextSize: number
-  /** 默认温度 */
-  defaultTemperature: number
-  /** 默认 Top-P */
-  defaultTopP: number
-  /** 默认最大 Token */
-  defaultMaxTokens: number
-  /** GPU 层数 (-1=全部) */
-  gpuLayers: number
-  /** 线程数 */
-  threads: number
-  /** API 服务器端口 */
-  apiPort: number
-  /** API 服务器自动启动 */
-  apiAutoStart: boolean
-  /** 主题模式 */
-  theme: 'light' | 'dark' | 'auto'
-  /** 最后一次加载的模型路径 */
-  lastModelPath: string | null
-}
 
 const DEFAULT_SETTINGS: AppSettings = {
   language: 'zh-CN',
@@ -91,9 +63,9 @@ export class SettingsService {
     }
   }
 
-  /**
-   * 获取所有设置
-   */
+/**
+ * 获取所有设置
+ */
   getAll(): AppSettings {
     return { ...this.settings }
   }
@@ -114,3 +86,6 @@ export class SettingsService {
     return this.settings[key]
   }
 }
+
+/** 全局唯一的 SettingsService 实例 */
+export const settingsService = new SettingsService()

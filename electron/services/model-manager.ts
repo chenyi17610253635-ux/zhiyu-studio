@@ -4,39 +4,10 @@
  */
 import fs from 'fs'
 import path from 'path'
+import type { LocalModel, HFModel } from '../../src/types'
 import { getAppPaths } from '../utils/paths'
-import { SettingsService } from './settings-service'
+import { settingsService } from './settings-service'
 import { logger } from '../utils/logger'
-
-export interface LocalModel {
-  /** 唯一标识 */
-  id: string
-  /** 文件名 */
-  fileName: string
-  /** 完整路径 */
-  filePath: string
-  /** 文件大小（字节） */
-  fileSize: number
-  /** 添加时间 */
-  addedAt: string
-  /** 模型名称（从文件名推断） */
-  name: string
-  /** 参数量 */
-  parameters?: string
-  /** 量化级别 */
-  quantization?: string
-}
-
-export interface HFModel {
-  id: string
-  name: string
-  author: string
-  downloads: number
-  likes: number
-  updatedAt: string
-  tags: string[]
-  description?: string
-}
 
 export class ModelManager {
   private modelsDir: string
@@ -62,7 +33,7 @@ export class ModelManager {
 
       // 扫描设置里配置的额外模型路径
       try {
-        const settings = new SettingsService().getAll()
+        const settings = settingsService.getAll()
         if (settings.modelsPath && fs.existsSync(settings.modelsPath)) {
           this.scanDir(settings.modelsPath, models)
         }

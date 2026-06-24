@@ -3,26 +3,8 @@
  * 检测系统中可用的 GPU 设备及其能力
  */
 import { exec } from 'child_process'
+import type { GPUDevice, GPUInfo } from '../../src/types'
 import { logger } from '../utils/logger'
-
-export interface GPUDevice {
-  name: string
-  vendor: string
-  memoryMB: number
-  driver?: string
-  computeCapability?: string
-  supportsCUDA?: boolean
-  supportsVulkan?: boolean
-  supportsROCm?: boolean
-}
-
-export interface GPUInfo {
-  hasGPU: boolean
-  devices: GPUDevice[]
-  recommendedBackend: 'cuda' | 'vulkan' | 'metal' | 'cpu'
-  totalMemoryMB: number
-  detectionMethod: 'nvidia-smi' | 'vulkaninfo' | 'unknown'
-}
 
 export class GPUDetector {
   /**
