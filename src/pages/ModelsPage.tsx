@@ -4,7 +4,7 @@
  */
 import { useEffect, useState } from 'react'
 import { Tabs, Typography, Button, Space, message } from 'antd'
-import { ReloadOutlined, FolderOpenOutlined, PlusOutlined } from '@ant-design/icons'
+import { ReloadOutlined, PlusOutlined } from '@ant-design/icons'
 import { useModelStore } from '../stores/model-store'
 import { useSettingsStore } from '../stores/settings-store'
 import ModelCard from '../components/models/ModelCard'

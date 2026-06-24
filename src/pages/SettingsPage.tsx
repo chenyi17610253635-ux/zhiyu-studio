@@ -1,7 +1,7 @@
 /**
  * 智语 Studio — 设置页面
  */
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import {
   Form, Card, Select, Switch, InputNumber, Input, Button,
   Space, Typography, Divider, Descriptions, Tag, Alert,
@@ -9,13 +9,11 @@ import {
 } from 'antd'
 import {
   SaveOutlined,
-  InfoCircleOutlined,
   GithubOutlined,
   DownloadOutlined
 } from '@ant-design/icons'
 import { useSettingsStore } from '../stores/settings-store'
 import { useModelStore } from '../stores/model-store'
-import { dialogClient } from '../services/ipc-client'
 
 const { Title, Text, Paragraph } = Typography
 
@@ -36,15 +34,6 @@ export default function SettingsPage() {
   const handleSave = () => {
     const values = form.getFieldsValue()
     updateSettings(values)
-  }
-
-  const handleChangeModelsPath = async () => {
-    const dir = await dialogClient.openDirectory()
-    if (dir) {
-      form.setFieldValue('modelsPath', dir)
-      updateSettings({ ...form.getFieldsValue(), modelsPath: dir })
-      antMsg.success('模型路径已更新，请到模型管理页面刷新')
-    }
   }
 
   return (
@@ -80,19 +69,7 @@ export default function SettingsPage() {
                   />
                 </Form.Item>
 
-                <Form.Item name="modelsPath" label="模型存储路径">
-                  <Input
-                    disabled
-                    style={{ width: '100%' }}
-                    addonAfter={
-                      <Button size="small" onClick={handleChangeModelsPath}>
-                        更改
-                      </Button>
-                    }
-                  />
-                </Form.Item>
-
-                <Form.Item
+<Form.Item
                   name="autoLoadLastModel"
                   label="启动时自动加载上次模型"
                   valuePropName="checked"
