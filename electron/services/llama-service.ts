@@ -353,6 +353,7 @@ export class LlamaService {
         async function* streamParser(): AsyncGenerator<string> {
           let buffer = ''
           let filtered = ''
+          let isReasoning = false
           let inThink = false; let thinkSafeCounter = 0
           let thinkDepth = 0
           res.setEncoding('utf8')
@@ -369,13 +370,13 @@ export class LlamaService {
               if (line.startsWith('data: ')) {
                 try {
                   const json = JSON.parse(line.slice(6))
-                  let content = json.content ? json.content.replace(/💭/g, '') : null
+                  let content = json.content
                   if (!content) {
                     const delta = json.choices?.[0]?.delta
-                    content = delta?.content ? delta.content.replace(/💭/g, '') : undefined
-                    // reasoning_content 是模型的思考过程，直接显示让用户看到进度
+                    // reasoning_content 是模型的思考过程，只更新 token 计数但不显示
+                    content = delta?.content
                     if (!content && delta?.reasoning_content) {
-                      content = `💭 ${delta.reasoning_content}`
+                      continue
                     }
                   }
                   if (!content) continue
