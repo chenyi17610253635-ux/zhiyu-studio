@@ -16,6 +16,8 @@ interface ModelState {
   modelConfig: ModelConfig
   isScanning: boolean
   isSearching: boolean
+  isLoading: boolean
+  loadProgress: { percent: number; message: string } | null
   isLoadingModel: boolean
   loadingModelName: string
 
@@ -59,6 +61,8 @@ export const useModelStore = create<ModelState>((set, get) => ({
   },
   isScanning: false,
   isSearching: false,
+  isLoading: false,
+  loadProgress: null,
   isLoadingModel: false,
   loadingModelName: '',
 
@@ -138,11 +142,14 @@ export const useModelStore = create<ModelState>((set, get) => ({
       }
       const success = await chatClient.loadModel(model.filePath, config)
       if (success) {
-        set({ loadedModel: model })
+        set({ loadedModel: model, isLoading: false, loadProgress: null })
+      } else {
+        set({ isLoading: false, loadProgress: null })
       }
       return success
     } catch (error) {
       console.error('加载模型失败:', error)
+      set({ isLoading: false, loadProgress: null })
       message.error(`模型加载失败: ${(error as Error).message}`)
       return false
     } finally {

@@ -58,6 +58,7 @@ export class LlamaService {
   private process: ChildProcess | null = null
   private serverPort: number = 8080
   private intentionalUnload: boolean = false
+  private loadProgressCallback: ((pct: number, msg: string) => void) | null = null
 
   // 保留最近的服务端日志，可用于前端展示
   lastServerLog: string = ''
@@ -76,6 +77,21 @@ export class LlamaService {
   /**
    * LM Studio 风格：参数直通，不加任何"智能"调整
    */
+  setLoadProgressCallback(cb: (pct: number, msg: string) => void): void {
+    this.loadProgressCallback = cb
+  }
+
+  private parseLoadProgress(line: string): void {
+    if (!this.loadProgressCallback) return
+    var l = line.toLowerCase()
+    if (l.includes('llama_model_load') && l.includes('gguf')) this.loadProgressCallback(10, '正在读取模型文件...')
+    else if (l.includes('llm_load_vocab') || l.includes('tokenizer')) this.loadProgressCallback(20, '正在加载词汇表...')
+    else if (l.includes('llm_load_tensors') || l.includes('load_tensors')) this.loadProgressCallback(30, '正在加载模型张量...')
+    else if (l.includes('tensor') && (l.includes('%') || l.includes('complete'))) this.loadProgressCallback(60, '模型张量加载完成')
+    else if (l.includes('warmup') || l.includes('warming')) this.loadProgressCallback(80, '正在预热模型...')
+    else if (l.includes('server listening') || l.includes('http server')) this.loadProgressCallback(95, '服务器已启动，完成中...')
+  }
+
   async loadModel(modelPath: string, config: LlamaConfig = {}): Promise<boolean> {
     if (this.process) await this.unloadModel()
 
@@ -131,6 +147,7 @@ export class LlamaService {
     }
 
     logger.info(`启动: ${serverPath} ${args.join(' ')}`)
+    if (this.loadProgressCallback) this.loadProgressCallback(0, '正在启动模型服务器...')
 
     // === 干净的启动流程 ===
     return new Promise((resolve, reject) => {
@@ -141,7 +158,7 @@ export class LlamaService {
         const text = buf.toString()
         this.lastServerLog = (this.lastServerLog + text).slice(-10000)
         logger.debug(`llama-server: ${text.trim()}`)
-      }
+        this.parseLoadProgress(text)
       this.process.stdout?.on('data', onData)
       this.process.stderr?.on('data', onData)
 
@@ -179,6 +196,7 @@ export class LlamaService {
           if (!this.status.isLoaded) {
             this.status = this.buildStatus(true, modelPath, config, port)
             logger.info(`模型就绪: ${path.basename(modelPath, '.gguf')} :${port}`)
+            if (this.loadProgressCallback) this.loadProgressCallback(100, '模型加载完成')
           }
           resolve(true)
         })

@@ -23,7 +23,14 @@ export function registerChatHandlers(): void {
   // 加载模型
   ipcMain.handle('chat:loadModel', async (_event, modelPath: string, config: any) => {
     try {
+      llamaService.setLoadProgressCallback((pct, msg) => {
+        const wins = BrowserWindow.getAllWindows()
+        for (const win of wins) {
+          if (!win.isDestroyed()) win.webContents.send('model:loadProgress', { percent: pct, message: msg })
+        }
+      })
       const success = await llamaService.loadModel(modelPath, config)
+      llamaService.setLoadProgressCallback(() => {})
       logger.info(`模型加载${success ? '成功' : '失败'}: ${modelPath}`)
       return success
     } catch (error) {

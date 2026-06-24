@@ -140,6 +140,13 @@ contextBridge.exposeInMainWorld('zhiyuAPI', {
     const handler = (_event: any, reason: string) => callback(reason)
     ipcRenderer.on('model:unloaded', handler)
     return () => ipcRenderer.removeListener('model:unloaded', handler)
+  },
+
+  /** 监听模型加载进度 */
+  onModelLoadProgress: (callback: (progress: { percent: number; message: string }) => void) => {
+    const handler = (_event: any, progress: { percent: number; message: string }) => callback(progress)
+    ipcRenderer.on('model:loadProgress', handler)
+    return () => ipcRenderer.removeListener('model:loadProgress', handler)
   }
 })
 
@@ -190,6 +197,7 @@ export interface ZhiyuAPI {
   onUpdateProgress: (callback: (percent: number) => void) => () => void
   onUpdateDownloaded: (callback: () => void) => () => void
   onModelUnloaded: (callback: (reason: string) => void) => () => void
+  onModelLoadProgress: (callback: (progress: { percent: number; message: string }) => void) => () => void
 }
 
 // 扩展 Window 接口

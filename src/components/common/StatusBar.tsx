@@ -5,13 +5,14 @@
 import { useEffect, useState } from 'react'
 import { useChatStore } from '../../stores/chat-store'
 import { useModelStore } from '../../stores/model-store'
-import { serverClient } from '../../services/ipc-client'
+import { serverClient, appClient } from '../../services/ipc-client'
 
 export default function StatusBar() {
   const isModelLoaded = useChatStore(s => s.isModelLoaded)
   const loadedModel = useModelStore(s => s.loadedModel)
   const gpuInfo = useModelStore(s => s.gpuInfo)
   const [serverStatus, setServerStatus] = useState({ isRunning: false, port: 1234 })
+  const [appVersion, setAppVersion] = useState('')
 
   useEffect(() => {
     const checkServer = async () => {
@@ -23,6 +24,10 @@ export default function StatusBar() {
     checkServer()
     const interval = setInterval(checkServer, 5000)
     return () => clearInterval(interval)
+  }, [])
+
+  useEffect(() => {
+    appClient.getVersion().then(v => setAppVersion(v)).catch(() => {})
   }, [])
 
   return (
@@ -56,6 +61,12 @@ export default function StatusBar() {
 
       {/* 右侧占位 */}
       <div style={{ flex: 1 }} />
+
+      {appVersion && (
+        <div className="status-item" style={{ color: '#999' }}>
+          <span>v{appVersion}</span>
+        </div>
+      )}
     </div>
   )
 }
