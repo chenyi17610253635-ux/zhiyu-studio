@@ -309,10 +309,11 @@ export class RagService {
   private async parsePdf(filePath: string): Promise<string> {
     try {
       // 动态导入 pdf-parse（避免在主进程中阻塞）
-      const { default: parsePdf } = await import('pdf-parse')
+      const { PDFParse } = await import('pdf-parse')
       const dataBuffer = fs.readFileSync(filePath)
-      const data = await parsePdf(dataBuffer)
-      return data.text || ''
+      const parser = new PDFParse({ data: dataBuffer, verbosity: 0 })
+      const result = await parser.getText()
+      return typeof result === 'string' ? result : (result?.text ?? '')
     } catch (error) {
       logger.error('PDF 解析失败，尝试简易读取', error as Error)
       // 降级：读取为原始文本（可能包含乱码但仍有部分可读内容）

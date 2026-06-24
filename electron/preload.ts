@@ -159,7 +159,7 @@ export interface ZhiyuAPI {
   openDirectoryDialog: () => Promise<string | null>
   getAppPaths: () => Promise<any>
   getAppVersion: () => Promise<string>
-  onModelUnloaded: (callback: () => void) => () => void
+  onModelUnloaded: (callback: (reason: string) => void) => () => void
 }
 
 // 扩展 Window 接口
