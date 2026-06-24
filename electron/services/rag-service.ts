@@ -292,9 +292,10 @@ export class RagService {
  private async parsePdf(filePath: string): Promise<string> {
     try {
       // 动态导入 pdf-parse（避免在主进程中阻塞）
-      const pdfParse = await import('pdf-parse')
+      const { PDFParse } = await import('pdf-parse')
       const dataBuffer = fs.readFileSync(filePath)
-      const result = await pdfParse.default(dataBuffer)
+      const parser = new PDFParse({ data: dataBuffer, verbosity: 0 })
+      const result = await parser.getText()
       return result?.text || ''
     } catch (error) {
       logger.error('PDF 解析失败，尝试简易读取', error as Error)

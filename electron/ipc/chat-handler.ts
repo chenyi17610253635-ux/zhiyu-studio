@@ -93,7 +93,7 @@ export function registerChatHandlers(): void {
   // 创建新会话
   ipcMain.handle('chat:createSession', async (_event, title?: string) => {
     try {
-      const session = sessionManager.createSession(title || '新对话')
+      const session = await sessionManager.createSession(title || '新对话')
       logger.info(`创建会话: ${session.id}`)
       return session
     } catch (error) {

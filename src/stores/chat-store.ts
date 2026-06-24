@@ -243,13 +243,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
     // 开始流式对话
     try {
-      set({\\
-        streamCleanup: () => {\\
-          cleanupToken()\\
-          cleanupDone()\\
-          cleanupError()\\
-        }\\
-      })\\
       set({
         streamCleanup: () => {
           cleanupToken()
@@ -279,11 +272,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
     // 如果最后一条消息已经是用户消息，没有 AI 回复可重新生成
     if (lastUserMsgIndex === 0) {
-      const cleanup = get().streamCleanup\\
-    if (cleanup) cleanup()\\
-    const cleanup = get().streamCleanup
-    if (cleanup) cleanup()
-    set({ isStreaming: false })
+      set({ isStreaming: false })
       return
     }
 
@@ -292,7 +281,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
     set({ messages: filteredMessages, isStreaming: true, streamingText: '' })
     let accumulatedTokens = ''
-    let flushTimer = null
+    let flushTimer: ReturnType<typeof setTimeout> | null = null
     const scheduleFlush = () => {
       if (flushTimer) return
       flushTimer = setTimeout(() => {
@@ -363,8 +352,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   stopStreaming: () => {
-    const cleanup = get().streamCleanup\\
-    if (cleanup) cleanup()\\
+    const cleanup = get().streamCleanup
+    if (cleanup) cleanup()
     set({ isStreaming: false })
   },
 

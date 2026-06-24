@@ -13,6 +13,7 @@ interface ModelState {
   hfModels: HFModel[]
   // 下载进度映射
   downloadProgress: Map<string, DownloadProgress>
+  downloadCleanup: (() => void) | null
   // GPU 信息
   gpuInfo: GPUInfo | null
   // 当前加载的模型
@@ -40,7 +41,6 @@ export const useModelStore = create<ModelState>((set, get) => ({
   localModels: [],
   hfModels: [],
   downloadProgress: new Map(),
-  downloadCleanup: null,
   downloadCleanup: null as (() => void) | null,
   gpuInfo: null,
   loadedModel: null,

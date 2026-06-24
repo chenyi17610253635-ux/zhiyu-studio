@@ -111,6 +111,8 @@ export class LlamaService {
       '--jinja',
       '--cache-type-k', 'q4_0',
       '--cache-type-v', 'q4_0',
+      '--no-warmup',
+      '--cont-batching',
     ]
 
     // 按 config 有条件地加
@@ -351,8 +353,9 @@ export class LlamaService {
                   if (!content) {
                     const delta = json.choices?.[0]?.delta
                     content = delta?.content
+                    // reasoning_content 是模型的思考过程，直接显示让用户看到进度
                     if (!content && delta?.reasoning_content) {
-                      content = `<think>${delta.reasoning_content}</think>`
+                      content = `💭 ${delta.reasoning_content}`
                     }
                   }
                   if (!content) continue
