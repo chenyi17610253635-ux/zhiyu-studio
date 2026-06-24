@@ -2,8 +2,9 @@
  * 智语 Studio — 聊天页面
  * 核心功能：多会话管理、流式对话、Markdown 渲染
  */
-import { useEffect } from 'react'
+import { Progress, useEffect } from 'react'
 import { useChatStore } from '../stores/chat-store'
+import { useModelStore } from '../stores/model-store'
 import SessionList from '../components/chat/SessionList'
 import ChatWindow from '../components/chat/ChatWindow'
 import ChatInput from '../components/chat/ChatInput'
@@ -11,6 +12,7 @@ import ModelSelector from '../components/chat/ModelSelector'
 import type { ChatAttachment } from '../types'
 
 export default function ChatPage() {
+  const { isLoading, loadProgress } = useModelStore()
   const {
     activeSessionId, sessions, loadSessions, createSession,
     sendMessage, isStreaming, stopStreaming
@@ -32,7 +34,21 @@ export default function ChatPage() {
   }
 
   return (
-    <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
+    <div style={
+      {isLoading && (
+        <div className="model-loading-overlay">
+          <div className="model-loading-card">
+            <h3>正在加载模型</h3>
+            <Progress
+              percent={loadProgress?.percent || 0}
+              status="active"
+              strokeColor={{ '0%': '#108ee9', '100%': '#87d068' }}
+            />
+            <p className="loading-message">{loadProgress?.message || '准备中...'}</p>
+          </div>
+        </div>
+      )}
+{ display: 'flex', height: '100%', overflow: 'hidden' }}>
       {/* 左侧会话列表 */}
       <div style={{
         width: 260,

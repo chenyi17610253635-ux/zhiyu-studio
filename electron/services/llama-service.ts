@@ -355,8 +355,9 @@ export class LlamaService {
           let filtered = ''
           let inThink = false; let thinkSafeCounter = 0
           let thinkDepth = 0
+          res.setEncoding('utf8')
           for await (const chunk of res) {
-            buffer += chunk.toString()
+            buffer += chunk
             const lines = buffer.split('\n')
             buffer = lines.pop() || ''
 

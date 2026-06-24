@@ -8,12 +8,15 @@ import { useModelStore } from '../../stores/model-store'
 import { useChatStore } from '../../stores/chat-store'
 
 export default function ModelSelector() {
-  const { localModels, loadedModel, scanModels, loadModel, unloadModel, isScanning } = useModelStore()
+  const { localModels, loadedModel, scanModels, loadModel, unloadModel, isScanning, isLoading } = useModelStore()
   const { checkModelStatus } = useChatStore()
 
   const handleSelect = async (modelId: string) => {
     const model = localModels.find(m => m.id === modelId)
     if (model) {
+      if (loadedModel && loadedModel.id !== modelId) {
+        await unloadModel()
+      }
       await loadModel(model)
       await checkModelStatus()
     }
@@ -31,6 +34,8 @@ export default function ModelSelector() {
         placeholder="选择模型..."
         value={loadedModel?.id || undefined}
         onChange={handleSelect}
+        disabled={isLoading}
+        notFoundContent={isScanning ? <span><LoadingOutlined /> 扫描中...</span> : "暂无模型"}
         options={localModels.map(m => ({
           value: m.id,
           label: (
