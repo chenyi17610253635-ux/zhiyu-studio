@@ -116,6 +116,8 @@ export class LlamaService {
     // 按 config 有条件地加
     if (config.ubatchSize) args.push('--ubatch-size', String(config.ubatchSize))
     if ((config.keep ?? 0) > 0) args.push('--keep', String(config.keep))
+    // 视觉模型需要 --image-min-tokens 以获得最佳性能
+    if (config.mmprojPath?.trim()) args.push('--image-min-tokens', '1024')
     if ((config.seed ?? -1) >= 0) args.push('--seed', String(config.seed))
     if (config.mlock) args.push('--mlock')
     if (config.noMmap) args.push('--no-mmap')
