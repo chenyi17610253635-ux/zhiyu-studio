@@ -403,7 +403,7 @@ export class LlamaService {
                       } else if (openIdx !== -1) {
                         thinkDepth++
                         thinkSafeCounter += openIdx - pos
-                        pos = openIdx + 7
+                        pos = openIdx + (openIdx === openEmojiIdx ? 2 : 7)
                       } else {
                         thinkSafeCounter += content.length - pos
                         pos = content.length
