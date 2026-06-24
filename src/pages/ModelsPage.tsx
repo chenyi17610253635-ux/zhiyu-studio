@@ -2,8 +2,9 @@
  * 智语 Studio — 模型管理页面
  * 本地模型管理 + HuggingFace 模型搜索下载
  */
-import { useEffect } from 'react'
-import { Tabs, Typography } from 'antd'
+import { useEffect, useState } from 'react'
+import { Tabs, Typography, Button, Space, message } from 'antd'
+import { ReloadOutlined, FolderOpenOutlined } from '@ant-design/icons'
 import { useModelStore } from '../stores/model-store'
 import ModelCard from '../components/models/ModelCard'
 import ModelDownload from '../components/models/ModelDownload'
@@ -12,11 +13,26 @@ import ModelConfig from '../components/models/ModelConfig'
 const { Title } = Typography
 
 export default function ModelsPage() {
-  const { localModels, scanModels } = useModelStore()
+  const { localModels, scanModels, isScanning } = useModelStore()
+  const [scanning, setScanning] = useState(false)
 
   useEffect(() => {
     scanModels()
   }, [])
+
+  const handleRefresh = async () => {
+    setScanning(true)
+    await scanModels()
+    setScanning(false)
+  }
+
+  const handleOpenFolder = async () => {
+    try {
+      await window.zhiyuAPI.openModelsFolder()
+    } catch {
+      // ignore
+    }
+  }
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -29,6 +45,18 @@ export default function ModelsPage() {
         alignItems: 'center'
       }}>
         <Title level={4} style={{ margin: 0 }}>模型管理</Title>
+        <Space>
+          <Button icon={<FolderOpenOutlined />} onClick={handleOpenFolder}>
+            打开模型目录
+          </Button>
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={handleRefresh}
+            loading={scanning}
+          >
+            刷新
+          </Button>
+        </Space>
       </div>
 
       {/* 内容 */}

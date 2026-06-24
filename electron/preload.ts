@@ -112,6 +112,9 @@ contextBridge.exposeInMainWorld('zhiyuAPI', {
   /** 获取应用版本 */
   getAppVersion: () => ipcRenderer.invoke('app:getVersion'),
 
+  /** 打开模型目录 */
+  openModelsFolder: () => ipcRenderer.invoke('app:openModelsFolder'),
+
   /** 监听模型被卸载事件（llama-server 退出时触发）reason: 'unload' | 'crash' | 'load_fail' */
   onModelUnloaded: (callback: (reason: string) => void) => {
     const handler = (_event: any, reason: string) => callback(reason)
@@ -159,6 +162,7 @@ export interface ZhiyuAPI {
   openDirectoryDialog: () => Promise<string | null>
   getAppPaths: () => Promise<any>
   getAppVersion: () => Promise<string>
+  openModelsFolder: () => Promise<void>
   onModelUnloaded: (callback: (reason: string) => void) => () => void
 }
 

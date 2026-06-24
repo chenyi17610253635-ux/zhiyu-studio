@@ -41,6 +41,7 @@ interface ZhiyuAPI {
   detectGPU: () => Promise<any>
   openFileDialog: (options?: any) => Promise<string | null>
   openDirectoryDialog: () => Promise<string | null>
+  openModelsFolder: () => Promise<void>
   getAppPaths: () => Promise<any>
   getAppVersion: () => Promise<string>
 }

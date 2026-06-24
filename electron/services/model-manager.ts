@@ -59,15 +59,6 @@ export class ModelManager {
       // 递归扫描所有子目录
       this.scanDir(this.modelsDir, models)
 
-      // 额外扫描路径（ComfyUI 等模型目录）
-      const extraPaths = [
-        'E:/ComfyUI/ComfyUI/models/LLM'
-      ]
-      for (const extraPath of extraPaths) {
-        if (fs.existsSync(extraPath)) {
-          this.scanDir(extraPath, models)
-        }
-      }
 
       // 按添加时间倒序排列
       models.sort((a, b) => new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime())

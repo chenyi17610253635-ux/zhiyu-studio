@@ -174,6 +174,13 @@ ipcMain.handle('dialog:openDirectory', async () => {
   return result.canceled ? null : result.filePaths[0]
 })
 
+// 在文件管理器中打开模型目录
+ipcMain.handle('app:openModelsFolder', async () => {
+  const { getAppPaths } = require('./utils/paths')
+  const paths = getAppPaths()
+  shell.openPath(paths.models)
+})
+
 // 获取应用路径信息
 ipcMain.handle('app:getPaths', () => {
   return getAppPaths()
