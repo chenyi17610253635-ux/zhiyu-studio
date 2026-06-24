@@ -1,7 +1,7 @@
 {
   "name": "zhiyu-studio",
-  "version": "1.1.0",
-  "description": "鏅鸿 Studio 鈥?鏈湴澶ц瑷€妯″瀷妗岄潰搴旂敤锛屾敮鎸佽亰澶┿€丷AG鐭ヨ瘑搴撳拰OpenAI鍏煎API",
+  "version": "1.1.1",
+  "description": "閺呴缚顕?Studio 閳?閺堫剙婀存径褑顕㈢懛鈧Ο鈥崇€峰宀勬桨鎼存梻鏁ら敍灞炬暜閹镐浇浜版径鈹库偓涓稟G閻儴鐦戞惔鎾虫嫲OpenAI閸忕厧顔怉PI",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx"
   },
-  "author": "鏅鸿 Studio",
+  "author": "閺呴缚顕?Studio",
   "license": "MIT",
   "dependencies": {
     "@ant-design/icons": "^5.3.0",
